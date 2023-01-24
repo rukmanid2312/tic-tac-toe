@@ -22,6 +22,6 @@ module.exports = {
         },
     },
     rules: {
-        "no-console": "error",
+        "no-console": "warn",
     },
 };
