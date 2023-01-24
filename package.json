@@ -17,9 +17,9 @@
             "pre-commit": "npm run typecheck && lint-staged"
         }
     },
-    "lint-staged":{
-        "\"src/**/*.{js,jsx,ts,tsx}\"":"eslint",
-        "\"**/*.{js,json,ts,tsx}\"":"prettier --write"
+    "lint-staged": {
+        "src/**/*.{js,jsx,ts,tsx}": "eslint",
+        "**/*.{js,json,ts,tsx}": "prettier --write"
     },
     "dependencies": {
         "expo": "~47.0.12",
