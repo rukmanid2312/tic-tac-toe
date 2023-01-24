@@ -13,8 +13,8 @@
     "semi": true,
     "singleAttributePerLine": false,
     "singleQuote": false,
+    "tabWidth": 2,
     "trailingComma": "es5",
     "useTabs": false,
-    "vueIndentScriptAndStyle": false,
-    "tabWidth": 4
-}
+    "vueIndentScriptAndStyle": false
+  }
