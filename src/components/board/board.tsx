@@ -9,18 +9,22 @@ import { cloneElement, ReactElement } from "react";
 import Text from "../text/text";
 import { BoardState } from "@utils";
 import React from "react";
+import BoardLine from "./boardLine";
+import { BoardResult } from "../../utils";
 
 type BoardProps = {
   state: BoardState;
   size: number;
   onCellPressed: (index: number) => void;
-  disabled: boolean;
+  disabled?: boolean;
+  gameResult?: BoardResult | false;
 } & TouchableOpacityProps;
-export default function Button({
+export default function Board({
   state,
   size,
   onCellPressed,
   disabled,
+  gameResult,
 }: BoardProps): ReactElement {
   return (
     <View
@@ -55,6 +59,7 @@ export default function Button({
           </TouchableOpacity>
         );
       })}
+      {gameResult && <BoardLine gameResult={gameResult} size={size} />}
     </View>
   );
 }

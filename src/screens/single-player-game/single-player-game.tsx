@@ -1,7 +1,7 @@
 import { StatusBar } from "expo-status-bar";
 import styles from "./single-player-game.styles";
-import { StyleSheet, Text, SafeAreaView } from "react-native";
-import { GradientBackground } from "@components";
+import { StyleSheet, View, SafeAreaView, Dimensions } from "react-native";
+import { GradientBackground, Text, Button } from "@components";
 import React, { ReactElement, useEffect, useState, useRef } from "react";
 import { Board, AudioApp } from "@components";
 import { useSounds } from "@utils";
@@ -13,7 +13,7 @@ export default function SinglePlayerGame(): ReactElement {
     Math.random() > 0.5 ? "HUMAN" : "BOT"
   );
   const [isHumanMaximizing, setIsHumanMaximising] = useState<boolean>(true);
-
+  const SCREEN_WIDTH = Dimensions.get("screen").width;
   const [state, setState] = useState<BoardState>([
     null,
     null,
@@ -25,6 +25,7 @@ export default function SinglePlayerGame(): ReactElement {
     null,
     null,
   ]);
+  const [gameCount, setGameCount] = useState({ wins: 0, loss: 0, draws: 0 });
   const gameResult = isTerminal(state);
   const playSounds = useSounds();
   const insertCell = async (
@@ -69,7 +70,10 @@ export default function SinglePlayerGame(): ReactElement {
       console.error(error);
     }
   }*/
-
+  const newGame = () => {
+    setState([null, null, null, null, null, null, null, null, null]);
+    setTurn(Math.random() > 0.5 ? "HUMAN" : "BOT");
+  };
   const getWinner = (winnerSymbol: Cell): "HUMAN" | "BOT" | "DRAW" => {
     if (winnerSymbol === "x") {
       return isHumanMaximizing ? "HUMAN" : "BOT";
@@ -86,15 +90,15 @@ export default function SinglePlayerGame(): ReactElement {
       console.log("winner" + winner);
       if (winner === "HUMAN") {
         playSounds("win");
-        alert("You won");
+        setGameCount({ ...gameCount, wins: gameCount.wins + 1 });
       }
       if (winner === "BOT") {
         playSounds("loss");
-        alert("You Lost");
+        setGameCount({ ...gameCount, loss: gameCount.loss + 1 });
       }
       if (winner === "DRAW") {
         playSounds("draw");
-        alert("it's draw");
+        setGameCount({ ...gameCount, draws: gameCount.draws + 1 });
       }
     } else {
       if (turn === "BOT") {
@@ -116,12 +120,40 @@ export default function SinglePlayerGame(): ReactElement {
   return (
     <GradientBackground>
       <SafeAreaView style={styles.container}>
+        <View>
+          <Text style={styles.difficulty}>Difficulty : Hard</Text>
+          <View style={styles.results}>
+            <View style={styles.resultBox}>
+              <Text style={styles.resultText}>Wins</Text>
+              <Text style={styles.resultCount}>{gameCount.wins}</Text>
+            </View>
+            <View style={styles.resultBox}>
+              <Text style={styles.resultText}>Loss</Text>
+              <Text style={styles.resultCount}>{gameCount.loss}</Text>
+            </View>
+            <View style={styles.resultBox}>
+              <Text style={styles.resultText}>Draw</Text>
+              <Text style={styles.resultCount}>{gameCount.draws}</Text>
+            </View>
+          </View>
+        </View>
         <Board
           disabled={Boolean(isTerminal(state)) || turn === "BOT"}
           onCellPressed={(index) => handleOnCellPressed(index)}
           state={state}
-          size={300}
+          size={SCREEN_WIDTH - 60}
+          gameResult={gameResult}
         />
+        {gameResult && (
+          <View style={styles.modal}>
+            <Text style={styles.modalTxt}>
+              {getWinner(gameResult.winner) === "HUMAN" && "YOU WON"}
+              {getWinner(gameResult.winner) === "BOT" && "YOU LOST"}
+              {getWinner(gameResult.winner) === "DRAW" && "IT'S A DRAW"}
+            </Text>
+            <Button title="Play Again" onPress={() => newGame()}></Button>
+          </View>
+        )}
       </SafeAreaView>
     </GradientBackground>
   );
