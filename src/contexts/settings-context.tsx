@@ -1,9 +1,12 @@
 import React, {
   createContext,
+  useContext,
+  useState,
+  useEffect,
   ReactElement,
   ReactNode,
-  useContext,
 } from "react";
+import { AsyncStorage } from "react-native";
 const difficulties = {
   "1": "Beginner",
   "3": "Intermediate",
@@ -32,7 +35,7 @@ const settingsContext = createContext<SettingsContextType | undefined>(
   undefined
 );
 
-function useSettings(): SettingsContextType {
+function useSettings() {
   const context = useContext(settingsContext);
   if (!context) {
     throw new Error("useContext must beused within servicecontext provider");
@@ -41,6 +44,41 @@ function useSettings(): SettingsContextType {
 }
 
 function SettingsProvider(props: { children: ReactNode }): ReactElement {
-  return <></>;
+  const [settings, setSettings] = useState<SettingsProps | null>(null);
+  const saveSettings = async <T extends keyof SettingsProps>(
+    setting: T,
+    value: SettingsProps[T]
+  ) => {
+    console.log("save");
+    try {
+      const oldSettings = settings ? settings : defaultSettings;
+      const newSettings = { ...oldSettings, [setting]: value };
+      const jsonSettings = JSON.stringify(newSettings);
+      console.log(jsonSettings);
+      await AsyncStorage.setItem("@settings", jsonSettings);
+      setSettings(newSettings);
+    } catch (err) {
+      alert("Error!");
+    }
+  };
+  const loadSettings = async () => {
+    try {
+      const settingsop = await AsyncStorage.getItem("@settings");
+      settingsop !== null
+        ? setSettings(JSON.parse(settingsop))
+        : setSettings(defaultSettings);
+    } catch (err) {
+      setSettings(defaultSettings);
+    }
+  };
+  useEffect(() => {
+    loadSettings();
+  }, []);
+  return (
+    <settingsContext.Provider
+      {...props}
+      value={{ settings, loadSettings, saveSettings }}
+    />
+  );
 }
-export { useSettings, SettingsProvider };
+export { useSettings, SettingsProvider, difficulties };

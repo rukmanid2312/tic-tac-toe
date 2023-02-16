@@ -1,9 +1,11 @@
 import { ReactElement, useEffect, useState, useRef } from "react";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
+import { useSettings } from "@contexts/settings-context";
 
 type SoundType = "win" | "loss" | "pop1" | "pop2" | "draw";
 export default function useSounds() {
+  const { settings } = useSettings();
   const popSoundRef = useRef<Audio.Sound | null>(null);
   const pop2SoundRef = useRef<Audio.Sound | null>(null);
   const winSoundRef = useRef<Audio.Sound | null>(null);
@@ -78,21 +80,27 @@ export default function useSounds() {
       draw: drawSoundRef,
     };
     try {
-      await soundsMap[sound].current?.replayAsync();
-      switch (sound) {
-        case "pop1":
-        case "pop2":
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          break;
-        case "win":
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          break;
-        case "loss":
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-          break;
-        case "draw":
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          break;
+      const status = await soundsMap[sound].current?.getStatusAsync();
+      status &&
+        status.isLoaded &&
+        settings?.sounds &&
+        soundsMap[sound].current?.replayAsync();
+      if (settings?.haptics) {
+        switch (sound) {
+          case "pop1":
+          case "pop2":
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            break;
+          case "win":
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            break;
+          case "loss":
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            break;
+          case "draw":
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            break;
+        }
       }
     } catch (err) {
       console.log(err);

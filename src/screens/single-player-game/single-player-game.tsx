@@ -5,6 +5,7 @@ import { GradientBackground, Text, Button } from "@components";
 import React, { ReactElement, useEffect, useState, useRef } from "react";
 import { Board, AudioApp } from "@components";
 import { useSounds } from "@utils";
+import { useSettings, difficulties } from "@contexts/settings-context";
 
 import { BoardState, isEmpty, isTerminal, getBestMove, Cell } from "@utils";
 
@@ -28,6 +29,7 @@ export default function SinglePlayerGame(): ReactElement {
   const [gameCount, setGameCount] = useState({ wins: 0, loss: 0, draws: 0 });
   const gameResult = isTerminal(state);
   const playSounds = useSounds();
+  const { settings } = useSettings();
   const insertCell = async (
     index: number,
     symbol: "x" | "o"
@@ -109,7 +111,12 @@ export default function SinglePlayerGame(): ReactElement {
           insertCell(move, "x");
           setTurn("HUMAN");
         } else {
-          const move: number = getBestMove(state, !isHumanMaximizing, 0, -1);
+          const move: number = getBestMove(
+            state,
+            !isHumanMaximizing,
+            0,
+            parseInt(settings ? settings.difficulty : "-1")
+          );
           insertCell(move, isHumanMaximizing ? "o" : "x");
           setTurn("HUMAN");
         }
@@ -121,7 +128,10 @@ export default function SinglePlayerGame(): ReactElement {
     <GradientBackground>
       <SafeAreaView style={styles.container}>
         <View>
-          <Text style={styles.difficulty}>Difficulty : Hard</Text>
+          <Text style={styles.difficulty}>
+            Difficulty :{" "}
+            {settings ? difficulties[settings.difficulty] : "Impossible"}
+          </Text>
           <View style={styles.results}>
             <View style={styles.resultBox}>
               <Text style={styles.resultText}>Wins</Text>
